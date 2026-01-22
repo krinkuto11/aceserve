@@ -6,6 +6,7 @@ Contenedor Docker para AceStream Engine compatible con múltiples arquitecturas 
 
 Este proyecto proporciona imágenes Docker del motor AceStream que funcionan de manera similar al servicio AceStream original, permitiendo la reproducción de streams P2P mediante el protocolo Ace.
 
+**Las imágenes están disponibles en Docker Hub tanto como [`jopsis/aceserve`](https://hub.docker.com/r/jopsis/aceserve) como [`jopsis/acestream`](https://hub.docker.com/r/jopsis/acestream), con los mismos tags y para todas las arquitecturas.**
 ## Arquitecturas soportadas
 
 - `linux/arm/v7` (ARM32)
@@ -72,6 +73,8 @@ http://localhost:6878/ace/getstream?id=CONTENTHASH
 Donde `CONTENTHASH` es el ID del contenido AceStream que deseas reproducir.
 
 ## Tags disponibles
+
+Para [`jopsis/aceserve`](https://hub.docker.com/r/jopsis/aceserve) y [`jopsis/acestream`](https://hub.docker.com/r/jopsis/acestream):
 
 - `latest`: Última versión estable
 - `vX.X.X`: Versiones específicas (ej: `v3.1.2`)
