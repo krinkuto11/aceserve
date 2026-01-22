@@ -1,0 +1,14 @@
+services:
+  aceserve:
+    image: jopsis/aceserve:latest
+    container_name: aceserve
+    restart: unless-stopped
+    ports:
+      - "6878:6878"
+      - "8621:8621"
+      - "62062:62062"
+    networks:
+      - aceserve-network
+networks:
+  aceserve-network:
+    driver: bridge
