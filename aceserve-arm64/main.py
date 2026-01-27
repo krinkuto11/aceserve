@@ -84,6 +84,18 @@ class Android:
     def publishFileReceiverState(self, *args, **kwargs):
         return
 
+    def getAppInfo(self, *args, **kwargs):
+        return {
+            "appId": "d3efefe5-4ce4-345b-adb6-adfa3ba92eab",
+            "appVersionCode": "6.6",
+            "deviceId": "d3efefe5-4ce4-345b-adb6-adfa3ba92eab",
+            "arch": self.getArch(),
+            "locale": "en-US",
+            "isAndroidTv": False,
+            "hasBrowser": False,
+            "hasWebView": False
+        }
+
     def _fake_rpc(self, method, *args):
         print(method, *args)
         if hasattr(Android, method):

@@ -116,6 +116,17 @@ class Android(object):
       return None
     elif method == "adjustCacheSettings":
       return None
+    elif method == "getAppInfo":
+      return {
+        "appId": "d3efefe5-4ce4-345b-adb6-adfa3ba92eab",
+        "appVersionCode": "302131302",
+        "deviceId": "d3efefe5-4ce4-345b-adb6-adfa3ba92eab",
+        "arch": platform.machine(),
+        "locale": "en-US",
+        "isAndroidTv": False,
+        "hasBrowser": False,
+        "hasWebView": False
+      }
     else:
       raise Exception("Unknown method: %s" % (method,))
 
