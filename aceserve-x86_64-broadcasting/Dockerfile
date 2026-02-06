@@ -1,0 +1,42 @@
+# Dockerfile to recreate futebas/acestream-engine-arm:3.2.7.6 from scratch
+# Based on extracted layers from the original image
+
+# Use Alpine Linux 3.21.0 as base (ARM64)
+FROM alpine:3.21.0
+
+ENV ACESTREAM_HOME=/acestream \
+    ANDROID_ROOT=/system \
+    ANDROID_DATA=/data \
+    PYTHONHOME=/acestream/python \
+    PYTHONPATH=/acestream/python/lib/stdlib:/acestream/python/lib/modules:/acestream/data:/acestream/modules.zip:/acestream/eggs-unpacked:/acestream/lib \
+    LD_LIBRARY_PATH=/system/lib64:/system/lib:/acestream/python/lib \
+    TEMP=/tmp \
+    PATH=/acestream/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Copy the acestream engine files
+# You need to extract these from the original image or obtain the AceStream Android APK
+
+COPY ace-x86_64.zip /
+RUN mkdir -p /acestream && \
+    cd /acestream && \
+    unzip ../ace-x86_64.zip && \
+    rm ../ace-x86_64.zip
+
+# Copy Android system libraries
+# These are extracted from Android system or the original image
+COPY system.zip /
+RUN unzip /system.zip && rm /system.zip && \
+    chmod -R +x /system/bin && \
+    chmod -R +x /acestream/python/bin
+
+# Add main.py, dnsproxyd.py and app_bridge.py scripts
+ADD main.py dnsproxyd.py app_bridge.py /acestream/
+
+# Set working directory
+WORKDIR /acestream
+
+# Expose AceStream ports
+EXPOSE 6878 8621 62062
+
+# Default command to run AceStream engine
+CMD ["python", "main.py"]

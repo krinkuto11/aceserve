@@ -88,6 +88,30 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: jopsis/acestream:${{ steps.meta.outputs.version }}-amd64
+
+      - name: Build and push ARM32 broadcasting image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./aceserve-arm32-broadcasting
+          platforms: linux/arm/v7
+          push: true
+          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-broadcasting-arm32
+
+      - name: Build and push ARM64 broadcasting image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./aceserve-arm64-broadcasting
+          platforms: linux/arm64
+          push: true
+          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-broadcasting-arm64
+
+      - name: Build and push x86_64 broadcasting image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./aceserve-x86_64-broadcasting
+          platforms: linux/amd64
+          push: true
+          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-broadcasting-amd64
       
       - name: Create and push multi-arch manifest for version tag
         run: |
@@ -104,6 +128,14 @@ jobs:
             jopsis/acestream:${VERSION}-arm32 \
             jopsis/acestream:${VERSION}-arm64 \
             jopsis/acestream:${VERSION}-amd64
+
+      - name: Create and push multi-arch manifest for broadcasting version tag
+        run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          docker buildx imagetools create -t jopsis/aceserve:${VERSION}-broadcasting \
+            jopsis/aceserve:${VERSION}-broadcasting-arm32 \
+            jopsis/aceserve:${VERSION}-broadcasting-arm64 \
+            jopsis/aceserve:${VERSION}-broadcasting-amd64
 
       - name: Create and push multi-arch manifest for latest tag
         if: steps.meta.outputs.is_tag == 'true'
@@ -122,3 +154,12 @@ jobs:
             jopsis/acestream:${VERSION}-arm32 \
             jopsis/acestream:${VERSION}-arm64 \
             jopsis/acestream:${VERSION}-amd64
+
+      - name: Create and push multi-arch manifest for broadcasting tag
+        if: steps.meta.outputs.version == 'latest' || steps.meta.outputs.is_tag == 'true'
+        run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          docker buildx imagetools create -t jopsis/aceserve:broadcasting \
+            jopsis/aceserve:${VERSION}-broadcasting-arm32 \
+            jopsis/aceserve:${VERSION}-broadcasting-arm64 \
+            jopsis/aceserve:${VERSION}-broadcasting-amd64
