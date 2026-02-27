@@ -2,7 +2,7 @@ import os
 import sys
 import threading
 import traceback
-import re
+import time
 import platform
 from datetime import datetime
 from functools import wraps
@@ -136,34 +136,35 @@ def log(msg):
 log('Starting AceStream Service on architecture: {}'.format(droid.getArch()))
 
 # -----------------------------
-# DNS override siempre activo.
-# Si existe una línea "# ExtServers: [x.x.x.x ...]" en /etc/resolv.conf, la usa.
-# Si no, hace fallback a los nameserver normales.
-# Logea método usado.
+# VPN wait hook: sleep until tun0 is available if WAIT_FOR_VPN is set
+# -----------------------------
+if os.environ.get('WAIT_FOR_VPN', '').lower() in ('1', 'true', 'yes'):
+    log('WAIT_FOR_VPN enabled, waiting for tun0 interface...')
+    _vpn_timeout = int(os.environ.get('VPN_TIMEOUT', '60'))
+    _vpn_elapsed = 0
+    while not os.path.exists('/sys/class/net/tun0'):
+        if _vpn_elapsed >= _vpn_timeout:
+            log(f'WAIT_FOR_VPN: tun0 not found after {_vpn_timeout}s, proceeding anyway')
+            break
+        time.sleep(1)
+        _vpn_elapsed += 1
+    else:
+        log('tun0 interface detected, proceeding...')
+
+# -----------------------------
+# DNS override via DNS_OVERRIDE env var (e.g. "1.1.1.1" or "1.1.1.1,8.8.8.8")
+# Falls back to well-known public DNS if not set.
 # -----------------------------
 import dns.resolver
 from dnsproxyd import dns_daemon
 
-nameservers = []
-found_extservers = False
-with open('/etc/resolv.conf', 'r') as f:
-    for line in f:
-        ext_match = re.search(r'# ExtServers: \[(.*?)\]', line)
-        if ext_match:
-            ns_list = ext_match.group(1).split()
-            nameservers.extend(ns_list)
-            found_extservers = True
-if not nameservers:
-    with open('/etc/resolv.conf', 'r') as f:
-        for line in f:
-            match = re.match(r'nameserver\s+(\S+)', line)
-            if match:
-                nameservers.append(match.group(1))
-
-if found_extservers:
-    log(f'Override DNS usando ExtServers del comentario: {nameservers}')
+dns_override = os.environ.get('DNS_OVERRIDE', '').strip()
+if dns_override:
+    nameservers = [ns.strip() for ns in dns_override.split(',') if ns.strip()]
+    log(f'Override DNS usando DNS_OVERRIDE: {nameservers}')
 else:
-    log(f'Override DNS usando los nameserver estándar: {nameservers}')
+    nameservers = ['1.1.1.1', '1.0.0.1']
+    log(f'DNS_OVERRIDE no definido, usando DNS por defecto: {nameservers}')
 
 RESOLVER = dns.resolver.Resolver()
 RESOLVER.nameservers = nameservers

@@ -29,6 +29,9 @@ RUN unzip /system.zip && rm /system.zip && \
     chmod -R +x /system/bin && \
     chmod -R +x /acestream/python/bin
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 # Add main.py, dnsproxyd.py and app_bridge.py scripts
 ADD main.py dnsproxyd.py app_bridge.py /acestream/
 
@@ -37,6 +40,10 @@ WORKDIR /acestream
 
 # Expose AceStream ports
 EXPOSE 6878 8621 62062
+
+# Healthcheck: verify the AceStream engine is responding
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:6878/public/api/stat || exit 1
 
 # Default command to run AceStream engine
 CMD ["python", "main.py", "--bind-all",  "--live-cache-type", "memory", "--live-mem-cache-size", "104857600", "--disable-sentry", "--log-stdout", "--disable-upnp" ]
