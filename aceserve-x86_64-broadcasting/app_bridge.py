@@ -23,7 +23,7 @@ import hashlib
 import platform
 
 PORT = os.environ.get('AP_PORT')
-HOST = os.environ.get('AP_HOST')
+HOST = os.environ.get('AP_HOST', '127.0.0.1')
 HANDSHAKE = os.environ.get('AP_HANDSHAKE')
 Result = collections.namedtuple('Result', 'id,result,error')
 
@@ -34,7 +34,7 @@ class Android(object):
     self.use_fake_host = False
 
     if addr is None:
-      if HOST is None:
+      if PORT is None:
         self.use_fake_host = True
       else:
         addr = HOST, PORT

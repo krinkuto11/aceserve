@@ -1,18 +1,26 @@
 services:
-  aceserve:
-    image: jopsis/aceserve:latest
-    container_name: aceserve
-    restart: unless-stopped
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_SERVICE_PROVIDER=mullvad   # change to your provider
+      - VPN_TYPE=wireguard             # or openvpn
+      # Add provider-specific env vars here (e.g. WIREGUARD_PRIVATE_KEY, SERVER_COUNTRIES)
     ports:
       - "6878:6878"
       - "8621:8621"
       - "62062:62062"
-    networks:
-      - aceserve-network
-    dns:
-      # - 74.115.172.133
-      - 1.1.1.1
-      - 1.0.0.1
-networks:
-  aceserve-network:
-    driver: bridge
+    restart: unless-stopped
+
+  aceserve:
+    image: ghcr.io/krinkuto11/aceserve:latest
+    container_name: aceserve
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
+    environment:
+      - WAIT_FOR_VPN=1          # wait for tun0 before starting AceStream
+      - DNS_OVERRIDE=1.1.1.1   # use Cloudflare DNS (bypasses Gluetun's 127.0.0.1)

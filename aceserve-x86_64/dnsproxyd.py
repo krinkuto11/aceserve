@@ -4,15 +4,29 @@ import os
 import dns.resolver
 import threading
 
+FALLBACK_DNS = ['1.1.1.1', '8.8.8.8']
+
 def dnsproxyd_listener(resolver):
     socket_path = '/dev/socket/dnsproxyd'
+    os.makedirs(os.path.dirname(socket_path), exist_ok=True)
 
-    if not os.path.exists(socket_path):
-        os.makedirs(os.path.dirname(socket_path), exist_ok=True)
+    if os.path.exists(socket_path):
+        try:
+            os.remove(socket_path)
+        except OSError:
+            pass
 
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_sock:
-            server_sock.bind(socket_path)
+            try:
+                server_sock.bind(socket_path)
+            except PermissionError as e:
+                print(f'dnsproxyd: PermissionError binding to {socket_path}: {e}')
+                return
+            except OSError as e:
+                print(f'dnsproxyd: OSError binding to {socket_path}: {e}')
+                return
+
             server_sock.listen(1)
 
             while True:
@@ -21,20 +35,32 @@ def dnsproxyd_listener(resolver):
                     query = client_sock.recv(1024)
                     domain = query.split()[1].decode('utf-8')
 
+                    resolved = []
                     try:
-                        dns = resolver.resolve(domain)
-                    except:
-                        dns = []
+                        resolved = resolver.resolve(domain)
+                    except Exception:
+                        pass
 
-                    if len(dns) > 0:
-                        response = create_addrinfo_response(dns[0].address)
+                    if not resolved:
+                        fallback_resolver = dns.resolver.Resolver()
+                        fallback_resolver.nameservers = FALLBACK_DNS
+                        try:
+                            resolved = fallback_resolver.resolve(domain)
+                        except Exception:
+                            pass
+
+                    if resolved:
+                        response = create_addrinfo_response(resolved[0].address)
                     else:
                         response = create_error_response()
 
                     client_sock.sendall(response)
     finally:
         if os.path.exists(socket_path):
-            os.remove(socket_path)
+            try:
+                os.remove(socket_path)
+            except OSError:
+                pass
 
 def create_addrinfo_response(ip):
     return struct.pack(

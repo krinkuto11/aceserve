@@ -7,6 +7,10 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -21,11 +25,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
@@ -47,7 +52,7 @@ jobs:
           context: ./aceserve-arm32
           platforms: linux/arm/v7
           push: true
-          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-arm32
+          tags: ghcr.io/${{ github.repository_owner }}/aceserve:${{ steps.meta.outputs.version }}-arm32
 
       - name: Build and push ARM32 image (acestream)
         uses: docker/build-push-action@v5
@@ -55,7 +60,7 @@ jobs:
           context: ./aceserve-arm32
           platforms: linux/arm/v7
           push: true
-          tags: jopsis/acestream:${{ steps.meta.outputs.version }}-arm32
+          tags: ghcr.io/${{ github.repository_owner }}/acestream:${{ steps.meta.outputs.version }}-arm32
       
       - name: Build and push ARM64 image
         uses: docker/build-push-action@v5
@@ -63,7 +68,7 @@ jobs:
           context: ./aceserve-arm64
           platforms: linux/arm64
           push: true
-          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-arm64
+          tags: ghcr.io/${{ github.repository_owner }}/aceserve:${{ steps.meta.outputs.version }}-arm64
 
       - name: Build and push ARM64 image (acestream)
         uses: docker/build-push-action@v5
@@ -71,7 +76,7 @@ jobs:
           context: ./aceserve-arm64
           platforms: linux/arm64
           push: true
-          tags: jopsis/acestream:${{ steps.meta.outputs.version }}-arm64
+          tags: ghcr.io/${{ github.repository_owner }}/acestream:${{ steps.meta.outputs.version }}-arm64
       
       - name: Build and push x86_64 image
         uses: docker/build-push-action@v5
@@ -79,7 +84,7 @@ jobs:
           context: ./aceserve-x86_64
           platforms: linux/amd64
           push: true
-          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-amd64
+          tags: ghcr.io/${{ github.repository_owner }}/aceserve:${{ steps.meta.outputs.version }}-amd64
 
       - name: Build and push x86_64 image (acestream)
         uses: docker/build-push-action@v5
@@ -87,7 +92,7 @@ jobs:
           context: ./aceserve-x86_64
           platforms: linux/amd64
           push: true
-          tags: jopsis/acestream:${{ steps.meta.outputs.version }}-amd64
+          tags: ghcr.io/${{ github.repository_owner }}/acestream:${{ steps.meta.outputs.version }}-amd64
 
       - name: Build and push ARM32 broadcasting image
         uses: docker/build-push-action@v5
@@ -95,7 +100,7 @@ jobs:
           context: ./aceserve-arm32-broadcasting
           platforms: linux/arm/v7
           push: true
-          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-broadcasting-arm32
+          tags: ghcr.io/${{ github.repository_owner }}/aceserve:${{ steps.meta.outputs.version }}-broadcasting-arm32
 
       - name: Build and push ARM64 broadcasting image
         uses: docker/build-push-action@v5
@@ -103,7 +108,7 @@ jobs:
           context: ./aceserve-arm64-broadcasting
           platforms: linux/arm64
           push: true
-          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-broadcasting-arm64
+          tags: ghcr.io/${{ github.repository_owner }}/aceserve:${{ steps.meta.outputs.version }}-broadcasting-arm64
 
       - name: Build and push x86_64 broadcasting image
         uses: docker/build-push-action@v5
@@ -111,55 +116,61 @@ jobs:
           context: ./aceserve-x86_64-broadcasting
           platforms: linux/amd64
           push: true
-          tags: jopsis/aceserve:${{ steps.meta.outputs.version }}-broadcasting-amd64
+          tags: ghcr.io/${{ github.repository_owner }}/aceserve:${{ steps.meta.outputs.version }}-broadcasting-amd64
       
       - name: Create and push multi-arch manifest for version tag
         run: |
           VERSION="${{ steps.meta.outputs.version }}"
-          docker buildx imagetools create -t jopsis/aceserve:${VERSION} \
-            jopsis/aceserve:${VERSION}-arm32 \
-            jopsis/aceserve:${VERSION}-arm64 \
-            jopsis/aceserve:${VERSION}-amd64
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          docker buildx imagetools create -t ghcr.io/${OWNER}/aceserve:${VERSION} \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-arm32 \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-arm64 \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-amd64
 
       - name: Create and push multi-arch manifest for version tag (acestream)
         run: |
           VERSION="${{ steps.meta.outputs.version }}"
-          docker buildx imagetools create -t jopsis/acestream:${VERSION} \
-            jopsis/acestream:${VERSION}-arm32 \
-            jopsis/acestream:${VERSION}-arm64 \
-            jopsis/acestream:${VERSION}-amd64
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          docker buildx imagetools create -t ghcr.io/${OWNER}/acestream:${VERSION} \
+            ghcr.io/${OWNER}/acestream:${VERSION}-arm32 \
+            ghcr.io/${OWNER}/acestream:${VERSION}-arm64 \
+            ghcr.io/${OWNER}/acestream:${VERSION}-amd64
 
       - name: Create and push multi-arch manifest for broadcasting version tag
         run: |
           VERSION="${{ steps.meta.outputs.version }}"
-          docker buildx imagetools create -t jopsis/aceserve:${VERSION}-broadcasting \
-            jopsis/aceserve:${VERSION}-broadcasting-arm32 \
-            jopsis/aceserve:${VERSION}-broadcasting-arm64 \
-            jopsis/aceserve:${VERSION}-broadcasting-amd64
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          docker buildx imagetools create -t ghcr.io/${OWNER}/aceserve:${VERSION}-broadcasting \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-broadcasting-arm32 \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-broadcasting-arm64 \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-broadcasting-amd64
 
       - name: Create and push multi-arch manifest for latest tag
         if: steps.meta.outputs.is_tag == 'true'
         run: |
           VERSION="${{ steps.meta.outputs.version }}"
-          docker buildx imagetools create -t jopsis/aceserve:latest \
-            jopsis/aceserve:${VERSION}-arm32 \
-            jopsis/aceserve:${VERSION}-arm64 \
-            jopsis/aceserve:${VERSION}-amd64
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          docker buildx imagetools create -t ghcr.io/${OWNER}/aceserve:latest \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-arm32 \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-arm64 \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-amd64
 
       - name: Create and push multi-arch manifest for latest tag (acestream)
         if: steps.meta.outputs.is_tag == 'true'
         run: |
           VERSION="${{ steps.meta.outputs.version }}"
-          docker buildx imagetools create -t jopsis/acestream:latest \
-            jopsis/acestream:${VERSION}-arm32 \
-            jopsis/acestream:${VERSION}-arm64 \
-            jopsis/acestream:${VERSION}-amd64
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          docker buildx imagetools create -t ghcr.io/${OWNER}/acestream:latest \
+            ghcr.io/${OWNER}/acestream:${VERSION}-arm32 \
+            ghcr.io/${OWNER}/acestream:${VERSION}-arm64 \
+            ghcr.io/${OWNER}/acestream:${VERSION}-amd64
 
       - name: Create and push multi-arch manifest for broadcasting tag
         if: steps.meta.outputs.version == 'latest' || steps.meta.outputs.is_tag == 'true'
         run: |
           VERSION="${{ steps.meta.outputs.version }}"
-          docker buildx imagetools create -t jopsis/aceserve:broadcasting \
-            jopsis/aceserve:${VERSION}-broadcasting-arm32 \
-            jopsis/aceserve:${VERSION}-broadcasting-arm64 \
-            jopsis/aceserve:${VERSION}-broadcasting-amd64
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          docker buildx imagetools create -t ghcr.io/${OWNER}/aceserve:broadcasting \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-broadcasting-arm32 \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-broadcasting-arm64 \
+            ghcr.io/${OWNER}/aceserve:${VERSION}-broadcasting-amd64
