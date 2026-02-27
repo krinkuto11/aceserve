@@ -1,6 +1,6 @@
 # Docker AceServe
 
-Docker container for AceStream Engine with support for multiple architectures (ARM32, ARM64, x86_64).
+Docker container for AceStream Engine with support for multiple architectures (ARM32, ARM64, x86_64)
 
 ## Description
 
@@ -132,4 +132,5 @@ The project includes Dockerfiles for each architecture in their respective folde
 ## License
 
 This project is provided as-is, without warranties.
+
 
