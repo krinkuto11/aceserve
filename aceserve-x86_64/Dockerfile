@@ -42,8 +42,8 @@ WORKDIR /acestream
 EXPOSE 6878 8621 62062
 
 # Healthcheck: verify the AceStream engine is responding
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:6878/public/api/stat || exit 1
+HEALTHCHECK --interval=2s --timeout=3s --start-period=3s --retries=20 \
+    CMD curl -sf http://localhost:6878/server/api?api_version=3&method=get_version || exit 1
 
 # Default command to run AceStream engine
 CMD ["python", "main.py", "--bind-all",  "--live-cache-type", "memory", "--live-mem-cache-size", "104857600", "--disable-sentry", "--log-stdout", "--disable-upnp" ]
