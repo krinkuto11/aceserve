@@ -20,6 +20,7 @@ GOT_RCP_HOST = True
 class Android:
     def getAceStreamHome(self, *args, **kwargs):
         return os.environ.get('ACESTREAM_HOME', '/dev/shm')
+
     def makeToast(self, msg, *args, **kwargs):
         print(msg)
 
@@ -46,6 +47,16 @@ class Android:
 
     def onSettingsUpdated(self, *args, **kwargs):
         return
+
+    def onAuthUpdated(self, *args, **kwargs):
+        return
+
+    def getAvailableBlocks(self, path="/", *args, **kwargs):
+        try:
+            st = os.statvfs(path)
+            return st.f_bavail
+        except Exception:
+            return 1000000
 
     def onEvent(self, *args, **kwargs):
         return

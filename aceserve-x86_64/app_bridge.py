@@ -116,6 +116,16 @@ class Android(object):
       return None
     elif method == "adjustCacheSettings":
       return None
+    elif method == "onAuthUpdated":
+      return None
+    elif method == "getAvailableBlocks":
+      import os
+      path = args[0] if args else "/"
+      try:
+        st = os.statvfs(path)
+        return st.f_bavail
+      except Exception:
+        return 1000000
     elif method == "getAppInfo":
       return {
         "appId": "d3efefe5-4ce4-345b-adb6-adfa3ba92eab",
