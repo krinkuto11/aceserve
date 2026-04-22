@@ -64,7 +64,7 @@ class Android(object):
 
   def _fake_rpc(self, method, *args):
     if method == "getAceStreamHome":
-      return "/dev/shm"
+      return os.environ.get('ACESTREAM_HOME', '/dev/shm')
     elif method == "makeToast":
       print(args[0] if args else "")
       return None

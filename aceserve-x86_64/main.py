@@ -19,8 +19,7 @@ GOT_RCP_HOST = True
 # -----------------------------
 class Android:
     def getAceStreamHome(self, *args, **kwargs):
-        return "/dev/shm"
-
+        return os.environ.get('ACESTREAM_HOME', '/dev/shm')
     def makeToast(self, msg, *args, **kwargs):
         print(msg)
 
