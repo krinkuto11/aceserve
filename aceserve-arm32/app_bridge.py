@@ -64,7 +64,7 @@ class Android(object):
 
   def _fake_rpc(self, method, *args):
     if method == "getAceStreamHome":
-      return "/dev/shm"
+      return os.environ.get('ACESTREAM_HOME', '/dev/shm')
     elif method == "makeToast":
       print(args[0] if args else "")
       return None
@@ -116,6 +116,15 @@ class Android(object):
       return None
     elif method == "adjustCacheSettings":
       return None
+    elif method == "onAuthUpdated":
+      return None
+    elif method == "getAvailableBlocks":
+      path = args[0] if args else "/"
+      try:
+        st = os.statvfs(path)
+        return st.f_bavail
+      except Exception:
+        return 1000000
     elif method == "getAppInfo":
       return {
         "appId": "d3efefe5-4ce4-345b-adb6-adfa3ba92eab",

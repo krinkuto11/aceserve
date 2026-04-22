@@ -119,7 +119,6 @@ class Android(object):
     elif method == "onAuthUpdated":
       return None
     elif method == "getAvailableBlocks":
-      import os
       path = args[0] if args else "/"
       try:
         st = os.statvfs(path)
